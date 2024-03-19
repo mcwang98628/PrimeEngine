@@ -47,22 +47,23 @@ void PhysicsManager::do_PRE_PHYSICS_UPDATE(Events::Event* pEvt)
 			{
 				continue;
 			}
-			curComp->applyGravity();
-			for (int j = 0; j < m_physicsComponentList.m_size; j++)
-			{
-				if (i != j && m_physicsComponentList[j].isValid())
-				{
-					Handle otherPhysicsComponentHandle = m_physicsComponentList[j];
-					PhysicsComponent* otherComponent = otherPhysicsComponentHandle.getObject<PhysicsComponent>();
-					
-					Vector3 collidedVec = curComp->m_collider->isCollided(curComp->m_target,  otherComponent->m_collider);
-					if (collidedVec.length() != 0.f)
-					{
-						curComp->redirect(collidedVec);
-						OutputDebugStringA("PE: PROGRESS: PhysicsManager::do_PHYSICS_UPDATE() Received: collided: ");
-					}
-				}
-			}
+			// curComp->applyGravity();
+			// for (int j = 0; j < m_physicsComponentList.m_size; j++)
+			// {
+			// 	if (i != j && m_physicsComponentList[j].isValid())
+			// 	{
+			// 		Handle otherPhysicsComponentHandle = m_physicsComponentList[j];
+			// 		PhysicsComponent* otherComponent = otherPhysicsComponentHandle.getObject<PhysicsComponent>();
+			// 		
+			// 		Vector3 collidedVec = curComp->m_collider->isCollided(curComp->m_target,  otherComponent->m_collider);
+			// 		// if collidedVec
+			// 		if (collidedVec.length() != 0.f)
+			// 		{
+			// 			curComp->redirect(collidedVec);
+			// 			OutputDebugStringA("PE: PROGRESS: PhysicsManager::do_PHYSICS_UPDATE() Received: collided: ");
+			// 		}
+			// 	}
+			// }
 		}
 	}
 		
@@ -84,14 +85,14 @@ void PhysicsManager::do_POST_PHYSICS_UPDATE(Events::Event* pEvt)
 			SceneNode *pSN = parentSceneNodeHandle.getObject<SceneNode>();
 			Handle hMainSN = pSN->getFirstParentByType<SceneNode>();
 			SceneNode* mainSN = hMainSN.getObject<SceneNode>();
-
+		
 			Handle colliderHandle = curComp->getFirstComponentHandle<Collider>();
 			Collider* curCollider = colliderHandle.getObject<Collider>();
-
-			Vector3 targetPos = curComp->m_target;
-			mainSN->m_base.setPos(targetPos);
-			Vector3 newPos = mainSN->m_base.getPos();
-			curCollider->updatePos(mainSN->m_base);
+		
+			// Vector3 targetPos = curComp->m_target;
+			// mainSN->m_base.setPos(targetPos);
+			// Vector3 newPos = mainSN->m_base.getPos();
+			// curCollider->updatePos(mainSN->m_base);
 		}
 	}
 

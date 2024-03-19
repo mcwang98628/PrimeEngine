@@ -333,36 +333,36 @@ void GameObjectManager::do_CREATE_MESH(Events::Event *pEvt)
 				PhysicsComponent *pc = new(phC) PhysicsComponent(*m_pContext, m_arena, phC, true);
 				pc->addDefaultComponents();
 
-				if (pRealEvent->m_collider)
-				{
-					if (pRealEvent->m_collider == "Box")
-					{
-						Mesh::BoundingBox customBox;
-						customBox.min_X = -(pRealEvent->dimension.m_x) / 2;
-						customBox.max_X = (pRealEvent->dimension.m_x) / 2;
-						customBox.min_Y = -(pRealEvent->dimension.m_y) /2;
-						customBox.max_Y = (pRealEvent->dimension.m_y) /2;
-						customBox.min_Z = -(pRealEvent->dimension.m_z) /2;
-						customBox.max_Z = (pRealEvent->dimension.m_z) /2;
-						pc->createBoxCollider(pSN, customBox);
-						pSN->addComponent(phC);
-						m_pContext->getPhysicsManager()->m_physicsComponentList.add(phC);
-					} else if (pRealEvent->m_collider == "Sphere")
-					{
-						pc->createSphereCollider(pSN, pRealEvent->dimension.m_x);
-						pSN->addComponent(phC);
-						m_pContext->getPhysicsManager()->m_physicsComponentList.add(phC);
-					}
-				}
-				else
-				{
+				// if (pRealEvent->m_collider)
+				// {
+				// 	if (pRealEvent->m_collider == "Box")
+				// 	{
+				// 		Mesh::BoundingBox customBox;
+				// 		customBox.min_X = -(pRealEvent->dimension.m_x) / 2;
+				// 		customBox.max_X = (pRealEvent->dimension.m_x) / 2;
+				// 		customBox.min_Y = -(pRealEvent->dimension.m_y) /2;
+				// 		customBox.max_Y = (pRealEvent->dimension.m_y) /2;
+				// 		customBox.min_Z = -(pRealEvent->dimension.m_z) /2;
+				// 		customBox.max_Z = (pRealEvent->dimension.m_z) /2;
+				// 		pc->createBoxCollider(pSN, customBox);
+				// 		pSN->addComponent(phC);
+				// 		m_pContext->getPhysicsManager()->m_physicsComponentList.add(phC);
+				// 	} else if (pRealEvent->m_collider == "Sphere")
+				// 	{
+				// 		pc->createSphereCollider(pSN, pRealEvent->dimension.m_x);
+				// 		pSN->addComponent(phC);
+				// 		m_pContext->getPhysicsManager()->m_physicsComponentList.add(phC);
+				// 	}
+				// }
+				// else
+				// {
 					Handle meshHandle = pMeshInstance->getFirstParentByTypePtr<Mesh>();
 					Mesh* staticMesh = meshHandle.getObject<Mesh>();
 				
 					pc->createBoxCollider(pSN, staticMesh->m_aabb);
 					pSN->addComponent(phC);
 					m_pContext->getPhysicsManager()->m_physicsComponentList.add(phC);
-				}
+				// }
 			}
 			else
 			{
@@ -399,7 +399,6 @@ void GameObjectManager::do_CREATE_MESH(Events::Event *pEvt)
 				Handle meshHandle = pMeshInstance->getFirstParentByTypePtr<Mesh>();
 				Mesh* staticMesh = meshHandle.getObject<Mesh>();
 				m_pContext->getPhysicsManager()->m_physicsComponentList.add(phC);
-				
 				
 				pc->createBoxCollider(pSN, staticMesh->m_aabb);
 				pSN->addComponent(phC);

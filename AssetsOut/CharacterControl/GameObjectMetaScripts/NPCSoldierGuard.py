@@ -1,5 +1,5 @@
 t = {}
-t["mayaRep"] = "Maya/Soldier/soldier_rep.mb"
+t["mayaRep"] = "Maya/Meshes/Vampire/vampire.ma"
 
 t["callerScript"] = '''
 -- this script is in lua format
@@ -11,13 +11,14 @@ function fillMetaInfoTable(args) -- the script fromat requires existance of this
 args['myScript']="SoldierNPC.lua"
 args['myScriptPackage']="CharacterControl"
 
-args['skinName'] = "SoldierTransform.mesha"
-args['skinPackage'] = "Soldier"
+args['skinName'] = "Vampire.mesha"
+args['skinPackage'] = "Vampire"
 
 args['gunMeshName'] = "m98.x_m98main_mesh.mesha"
 args['gunMeshPackage'] = "CharacterControl"
 
 args['npcType'] = 'Guard'
+args['animation'] = 'blend'
 
 end -- required
 '''

@@ -68,6 +68,8 @@ SoldierNPC::SoldierNPC(PE::GameContext &context, PE::MemoryArena arena, PE::Hand
 
 	strncpy(m_npcType, pEvt->m_npcType, sizeof(m_npcType) - 1);
 	m_npcType[sizeof(m_npcType) - 1] = '\0';
+
+	m_animationType = pEvt->m_animation;
 	
 	RootSceneNode::Instance()->addComponent(hSN);
 
@@ -108,9 +110,14 @@ SoldierNPC::SoldierNPC(PE::GameContext &context, PE::MemoryArena arena, PE::Hand
 			hSoldierAnimSM);
 		pSkelInst->addDefaultComponents();
 
-		pSkelInst->initFromFiles("soldier_Soldier_Skeleton.skela", "Soldier", pEvt->m_threadOwnershipMask);
+		// pSkelInst->initFromFiles("soldier_Soldier_Skeleton.skela", "Soldier", pEvt->m_threadOwnershipMask);
+		pSkelInst->initFromFiles("vampire-t-pose_Hips.skela", "Vampire", pEvt->m_threadOwnershipMask);
 
-		pSkelInst->setAnimSet("soldier_Soldier_Skeleton.animseta", "Soldier");
+		
+		// pSkelInst->setAnimSet("soldier_Soldier_Skeleton.animseta", "Soldier");
+		pSkelInst->setAnimSet("vampire-action-adventure-pack_Hips.animseta", "Vampire");
+		pSkelInst->setAnimSet("vampire-sample-action-pack_Hips.animseta", "Vampire");
+
 
 		PE::Handle hMeshInstance("MeshInstance", sizeof(MeshInstance));
 		MeshInstance *pMeshInstance = new(hMeshInstance) MeshInstance(*m_pContext, m_arena, hMeshInstance);
@@ -127,29 +134,31 @@ SoldierNPC::SoldierNPC(PE::GameContext &context, PE::MemoryArena arena, PE::Hand
 		m_pContext->getPhysicsManager()->m_physicsComponentList.add(hPhysicsComponent);
 		
 		pSkelInst->addComponent(hMeshInstance);
+		// pSN->addComponent(hMeshInstance);
 
 		// add skin to scene node
 		pRotateSN->addComponent(hSkeletonInstance);
 
 		#if !APIABSTRACTION_D3D11
 		{
-			PE::Handle hMyGunMesh = PE::Handle("MeshInstance", sizeof(MeshInstance));
-			MeshInstance *pGunMeshInstance = new(hMyGunMesh) MeshInstance(*m_pContext, m_arena, hMyGunMesh);
-
-			pGunMeshInstance->addDefaultComponents();
-			pGunMeshInstance->initFromFile(pEvt->m_gunMeshName, pEvt->m_gunMeshPackage, pEvt->m_threadOwnershipMask);
-
-			// create a scene node for gun attached to a joint
-
-			PE::Handle hMyGunSN = PE::Handle("SCENE_NODE", sizeof(JointSceneNode));
-			JointSceneNode *pGunSN = new(hMyGunSN) JointSceneNode(*m_pContext, m_arena, hMyGunSN, 38);
-			pGunSN->addDefaultComponents();
-
-			// add gun to joint
-			pGunSN->addComponent(hMyGunMesh);
-
-			// add gun scene node to the skin
-			pSkelInst->addComponent(hMyGunSN);
+			// PE::Handle hMyGunMesh = PE::Handle("MeshInstance", sizeof(MeshInstance));
+			// MeshInstance *pGunMeshInstance = new(hMyGunMesh) MeshInstance(*m_pContext, m_arena, hMyGunMesh);
+			//
+			// pGunMeshInstance->addDefaultComponents();
+			// pGunMeshInstance->initFromFile(pEvt->m_gunMeshName, pEvt->m_gunMeshPackage, pEvt->m_threadOwnershipMask);
+			//
+			// // create a scene node for gun attached to a joint
+			//
+			// PE::Handle hMyGunSN = PE::Handle("SCENE_NODE", sizeof(JointSceneNode));
+			// JointSceneNode *pGunSN = new(hMyGunSN) JointSceneNode(*m_pContext, m_arena, hMyGunSN, 38);
+			// pGunSN->addDefaultComponents();
+			//
+			// // add gun to joint
+			// pGunSN->addComponent(hMyGunMesh);
+			// pGunSN->m_base.turnRight(3.1415);
+			//
+			// // add gun scene node to the skin
+			// pSkelInst->addComponent(hMyGunSN);
 		}
 		#endif
 
@@ -164,24 +173,24 @@ SoldierNPC::SoldierNPC(PE::GameContext &context, PE::MemoryArena arena, PE::Hand
     PE::Handle hSoldierMovementSM("SoldierNPCMovementSM", sizeof(SoldierNPCMovementSM));
 	SoldierNPCMovementSM *pSoldierMovementSM = new(hSoldierMovementSM) SoldierNPCMovementSM(*m_pContext, m_arena, hSoldierMovementSM);
 	pSoldierMovementSM->addDefaultComponents();
-
+ 
 	// add it to soldier NPC
 	addComponent(hSoldierMovementSM);
-
+ 
 	// add behavior state machine ot soldier npc
     PE::Handle hSoldierBheaviorSM("SoldierNPCBehaviorSM", sizeof(SoldierNPCBehaviorSM));
 	SoldierNPCBehaviorSM *pSoldierBehaviorSM = new(hSoldierBheaviorSM) SoldierNPCBehaviorSM(*m_pContext, m_arena, hSoldierBheaviorSM, hSoldierMovementSM);
 	pSoldierBehaviorSM->addDefaultComponents();
-
+ 
 	// add it to soldier NPC
 	addComponent(hSoldierBheaviorSM);
-
+ 
 	StringOps::writeToString(pEvt->m_patrolWayPoint, pSoldierBehaviorSM->m_curPatrolWayPoint, 32);
 	pSoldierBehaviorSM->m_havePatrolWayPoint = StringOps::length(pSoldierBehaviorSM->m_curPatrolWayPoint) > 0;
 	StringOps::writeToString(pEvt->m_enemy, pSoldierBehaviorSM->m_curEnemy, 32);
-
+ 
 	// start the soldier
-	pSoldierBehaviorSM->start();
+	pSoldierBehaviorSM->startAnimationSample();
 #endif
 }
 

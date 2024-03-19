@@ -95,6 +95,10 @@ struct AnimationSlot
 	{
 		m_flags = m_flags | FADING_AWAY;
 	}
+	void setNotFadingAway()
+	{
+		m_flags = m_flags & (~FADING_AWAY);
+	}
 
 	PrimitiveTypes::Bool isActive()
 	{

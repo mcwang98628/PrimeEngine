@@ -236,7 +236,6 @@ void SkeletonCPU::prepareMatrixPalette(JointCPU &jnt,
 		}
 		else
 		{
-			
 			AnimationSlot &slot1 = slots[toBlend[1]];
 			AnimSetBufferGPU *pAnimSetGPU1 = hAnimSetGPUs[slot1.m_animationSetIndex].getObject<AnimSetBufferGPU>();
 			AnimationSetCPU *pAnimSetCPU1 = pAnimSetGPU1->m_hAnimationSetCPU.getObject<AnimationSetCPU>();
@@ -244,7 +243,6 @@ void SkeletonCPU::prepareMatrixPalette(JointCPU &jnt,
 			TSQ a1 = anim1.m_frames[slot1.m_iFrameIndex0][jnt.m_index];
 			TSQ b1 = anim1.m_frames[slot1.m_iFrameIndex1][jnt.m_index];
 			TSQ avg1 = TSQ::SLERP(a1, b1, slot1.m_blendFactor);
-
 
 			if (nBlend < 3)
 			{

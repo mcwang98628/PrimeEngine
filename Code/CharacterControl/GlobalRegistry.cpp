@@ -74,6 +74,12 @@ void CharacterControl::Register(PE::Components::LuaEnvironment *pLuaEnv, PE::Glo
 				Event_MoveTank_S_to_C::InitializeAndRegister(pLuaEnv, pRegistry, setLuaMetaDataOnly);
 				Event_Tank_Throttle::InitializeAndRegister(pLuaEnv, pRegistry, setLuaMetaDataOnly);
 				Event_Tank_Turn::InitializeAndRegister(pLuaEnv, pRegistry, setLuaMetaDataOnly);
+
+				SoldierNPCAnimSM_Event_SAMPLE_BLEND::InitializeAndRegister(pLuaEnv, pRegistry, setLuaMetaDataOnly);
+				SoldierNPCAnimSM_Event_SAMPLE_PARTIAL::InitializeAndRegister(pLuaEnv, pRegistry, setLuaMetaDataOnly);
+				SoldierNPCAnimSM_Event_SAMPLE_ADDITIVE::InitializeAndRegister(pLuaEnv, pRegistry, setLuaMetaDataOnly);
+				SoldierNPCAnimSM_Event_SAMPLE_ADDITIVE::InitializeAndRegister(pLuaEnv, pRegistry, setLuaMetaDataOnly);
+
 			}
 			// end root.CharacterControl.Events
 			pLuaEnv->EndRegistrationTable();

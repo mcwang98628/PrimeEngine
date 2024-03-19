@@ -20,7 +20,7 @@ namespace CharacterControl {
 
 		SoldierNPCMovementSM_Event_MOVE_TO::SoldierNPCMovementSM_Event_MOVE_TO(Vector3 targetPos /* = Vector3 */)
 			: m_targetPosition(targetPos)
-			, m_running(false)
+			, m_running(true)
 		{ }
 
 		PE_IMPLEMENT_CLASS1(SoldierNPCMovementSM_Event_STOP, Event);
@@ -100,8 +100,6 @@ namespace CharacterControl {
 				// release memory now that event is processed
 				h.release();
 			}
-
-
 		}
 
 		void SoldierNPCMovementSM::do_SoldierNPCMovementSM_Event_STOP(PE::Events::Event* pEvt)
@@ -147,10 +145,13 @@ namespace CharacterControl {
 						Vector3 dir = (m_targetPostion - curPos);
 						dir.normalize();
 						float dist = sqrt(dsqr);
-						if (dist > allowedDisp)
+						if (dist > 0.03f)
 						{
 							dist = allowedDisp; // can move up to allowedDisp
 							reached = false; // not reaching destination yet
+						}else
+						{
+							reached = true;
 						}
 
 						// instantaneous turn
@@ -197,15 +198,21 @@ namespace CharacterControl {
 			}
 			if (m_state == STANDING)
 			{
-				SceneNode* pSN = getParentsSceneNode();
-
-				if (m_enemyNode && pSN) {
-					Vector3 curPos = pSN->m_base.getPos();
-					Vector3 enemyPos = m_enemyNode->m_base.getPos();
-					Vector3 dir = (enemyPos - curPos);
-					dir.normalize();
-					pSN->m_base.turnInDirection(dir, 3.1415f);
-				}
+				// SceneNode* pSN = getParentsSceneNode();
+				//
+				// if (m_enemyNode && pSN) {
+				// 	Vector3 curPos = pSN->m_base.getPos();
+				// 	Vector3 enemyPos = m_enemyNode->m_base.getPos();
+				// 	Vector3 dir = (enemyPos - curPos);
+				// 	dir.normalize();
+				// 	pSN->m_base.turnInDirection(dir, 3.1415f);
+				// } else
+				// {
+				// 	Events::SoldierNPCAnimSM_Event_STOP Evt;
+				//
+				// 	SoldierNPC* pSol = getFirstParentByTypePtr<SoldierNPC>();
+				// 	pSol->getFirstComponent<PE::Components::SceneNode>()->handleEvent(&Evt);
+				// }
 			}
 		}
 

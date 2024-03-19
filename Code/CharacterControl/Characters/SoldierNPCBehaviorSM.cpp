@@ -46,9 +46,9 @@ void SoldierNPCBehaviorSM::start()
 		m_hMovementSM.getObject<Component>()->handleEvent(pEvt);
 		// release memory now that event is processed
 		h.release();
-		
 	}	
 }
+
 
 void SoldierNPCBehaviorSM::addDefaultComponents()
 {
@@ -109,8 +109,8 @@ void SoldierNPCBehaviorSM::do_PRE_RENDER_needsRC(PE::Events::Event *pEvt)
 	Event_PRE_RENDER_needsRC *pRealEvent = (Event_PRE_RENDER_needsRC *)(pEvt);
 	if (m_havePatrolWayPoint)
 	{
-		char buf[80];
-		sprintf(buf, "Patrol Waypoint: %s",m_curPatrolWayPoint);
+		// char buf[80];
+		// sprintf(buf, "Patrol Waypoint: %s",m_curPatrolWayPoint);
 		SoldierNPC *pSol = getFirstParentByTypePtr<SoldierNPC>();
 		PE::Handle hSoldierSceneNode = pSol->getFirstComponentHandle<PE::Components::SceneNode>();
 		Matrix4x4 base = hSoldierSceneNode.getObject<PE::Components::SceneNode>()->m_worldTransform;
@@ -119,17 +119,6 @@ void SoldierNPCBehaviorSM::do_PRE_RENDER_needsRC(PE::Events::Event *pEvt)
 		// 	buf, false, false, true, false, 0,
 		// 	base.getPos(), 0.01f, pRealEvent->m_threadOwnershipMask);
 		
-
-		// SkeletonInstance *pSkelInst = getFirstParentByTypePtr<SkeletonInstance>();
-		// int index = -1;
-		// MeshInstance *pMeshInst = NULL;
-		// pSkelInst->getFirstComponentIP<MeshInstance>(index + 1, index, pMeshInst);
-		// Mesh *pMesh = getFirstParentByTypePtr<Mesh>();
-		
-		// PE::Components::MeshInstance hSoldierMeshPosBuffer = pSol->getFirstComponentHandle<PE::Components::MeshInstance>();
-		// PE::Handle posBuffHandle = hSoldierMeshPosBuffer.getObject<PE::Components::Mesh>()->m_hPositionBufferCPU;
-		// PositionBufferCPU *pPoss = posBuffHandle.getObject<PositionBufferCPU>();
-
 		{
 			//we can also construct points ourself
 			bool sent = false;
@@ -213,11 +202,11 @@ void SoldierNPCBehaviorSM::do_UPDATE(PE::Events::Event *pEvt)
 				// PEINFO("SoldierNPCBehaviorSM::do_UPDATE distance is %s \n", distance);
 
 				if (distance < 6.f) {
-					m_state = COMBAT;
-
+					// m_state = COMBAT;
+				
 					PE::Handle h("SoldierNPCMovementSM_Event_ENEMY_DETECTED", sizeof(SoldierNPCMovementSM_Event_ENEMY_DETECTED));
 					SoldierNPCMovementSM_Event_ENEMY_DETECTED *pEvt = new(h) SoldierNPCMovementSM_Event_ENEMY_DETECTED(enemySceneNode);
-
+				
 					m_hMovementSM.getObject<Component>()->handleEvent(pEvt);
 					// release memory now that event is processed
 					h.release();
@@ -225,7 +214,16 @@ void SoldierNPCBehaviorSM::do_UPDATE(PE::Events::Event *pEvt)
 			}
 		}
 	}
-	if (m_state == COMBAT) {
+	if(m_state == SAMPLE_ANIMATION)
+	{
+		Event_UPDATE* pRealEvt = (Event_UPDATE*)(pEvt);
+		m_pastTime += pRealEvt->m_frameTime;
+		if (m_pastTime >= m_exampleTimeThreshold)
+		{
+			startAnimationSample();
+		}
+	}
+	// if (m_state == COMBAT) {
 		// ClientGameObjectManagerAddon *pGameObjectManagerAddon = (ClientGameObjectManagerAddon *)(m_pContext->get<CharacterControlContext>()->getGameObjectManagerAddon());
 		// if (pGameObjectManagerAddon)
 		// {
@@ -247,7 +245,28 @@ void SoldierNPCBehaviorSM::do_UPDATE(PE::Events::Event *pEvt)
 		// 		h.release();
 		// 	}
 		// }
+	// }
+}
 
+void SoldierNPCBehaviorSM::startAnimationSample()
+{
+	m_state = SAMPLE_ANIMATION;
+	SoldierNPC *pSol = getFirstParentByTypePtr<SoldierNPC>();
+	m_pastTime = 0;
+	if (StringOps::strcmp(pSol->m_animationType, "blendAnim") == 0)
+	{
+		Events::SoldierNPCAnimSM_Event_SAMPLE_BLEND Evt;
+		pSol->getFirstComponent<PE::Components::SceneNode>()->handleEvent(&Evt);
+	}
+	else if (StringOps::strcmp(pSol->m_animationType, "partial") == 0)
+	{
+		Events::SoldierNPCAnimSM_Event_SAMPLE_PARTIAL Evt;
+		pSol->getFirstComponent<PE::Components::SceneNode>()->handleEvent(&Evt);
+	}
+	else if (StringOps::strcmp(pSol->m_animationType, "additive") == 0)
+	{
+		Events::SoldierNPCAnimSM_Event_SAMPLE_ADDITIVE Evt;
+		pSol->getFirstComponent<PE::Components::SceneNode>()->handleEvent(&Evt);
 	}
 }
 }}

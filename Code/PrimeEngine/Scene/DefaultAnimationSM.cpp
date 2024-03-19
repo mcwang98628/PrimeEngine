@@ -60,6 +60,8 @@ DefaultAnimationSM::DefaultAnimationSM(PE::GameContext &context, PE::MemoryArena
 	m_animSlots.add(AnimationSlot());
 	m_animSlots.add(AnimationSlot());
 	m_animSlots.add(AnimationSlot());
+	m_pContext = &context;
+	m_arena = arena;
 }
 
 void DefaultAnimationSM::addDefaultComponents()
@@ -153,7 +155,7 @@ void DefaultAnimationSM::do_SCENE_GRAPH_UPDATE(Events::Event *pEvt)
 
 		bool doFrameCalculations = false;
 		// if looping make sure that the last frame plays deserved time, i.e. 31 frames play frame_time * 31 where last frame is blended with 0th frame
-		//if (frame >= (PrimitiveTypes::Float32)(anim.m_frames.m_size - (slot.m_looping ? 0 : 1)))
+		// if (frame >= (PrimitiveTypes::Float32)(anim.m_frames.m_size - (slot.m_looping ? 0 : 1)))
 
 		if (framesLeft < 0.0f)
 		{
@@ -178,6 +180,7 @@ void DefaultAnimationSM::do_SCENE_GRAPH_UPDATE(Events::Event *pEvt)
 			{
 				// end of animtion
 				slot.setNotActive();
+				slot.setNotFadingAway();
 				if (slot.needToNotifyOnAnimationEnd())
 				{
 					Event_ANIMATION_ENDED evt;
@@ -372,6 +375,32 @@ void DefaultAnimationSM::do_PRE_RENDER_needsRC(PE::Events::Event *pEvt)
 			DebugRenderer::Instance()->createLineMesh(false, m, NULL, 0, 0, 0.2f);
 		}
 	}
+	static Array<AnimationSlot> slotInfo;
+	slotInfo.reset(2);
+	for (PrimitiveTypes::UInt32 iSlot = 0; iSlot < m_animSlots.m_size; iSlot++)
+	{
+		AnimationSlot &slot = m_animSlots[iSlot];
+		if(!(slot.m_flags & ACTIVE) && !(slot.m_flags & FADING_AWAY))
+		{
+			continue;
+		}
+		slotInfo.add(slot);
+	}
+	if (slotInfo.m_size == 2)
+	{
+		PrimitiveTypes::Float32 blendFactor = slotInfo[1].m_weight / (slotInfo[0].m_weight + slotInfo[1].m_weight);
+		sprintf(PEString::s_buf, "BlendAnim Index 1: %d, Index 2: %d, BlendFactor: %f",slotInfo[0].m_animationIndex, slotInfo[1].m_animationIndex, blendFactor);
+		DebugRenderer::Instance()->createTextMesh(
+			PEString::s_buf, false, false, true, false, 0,
+			pSN->m_worldTransform.getPos(), 0.01f, pRealEvt->m_threadOwnershipMask);
+		
+	} else if (slotInfo.m_size > 0)
+	{
+		sprintf(PEString::s_buf, "Anim Index: %d,frame: %f",slotInfo[0].m_animationIndex, slotInfo[0].m_framesLeft);
+		DebugRenderer::Instance()->createTextMesh(
+			PEString::s_buf, false, false, true, false, 0,
+			pSN->m_worldTransform.getPos(), 0.01f, pRealEvt->m_threadOwnershipMask);
+	}
 
 	// test out skinning
 	int index = -1;
@@ -523,7 +552,7 @@ void DefaultAnimationSM::do_Event_PLAY_ANIMATION(Events::Event *pEvt)
 {
 	Events::Event_PLAY_ANIMATION *pRealEvent = (Events::Event_PLAY_ANIMATION *)(pEvt);
 	setAnimation(pRealEvent->m_animSetIndex, pRealEvent->m_animIndex,
-		0, 0, 1, 1,
+		0, 1, 0, 0,
 		LOOPING);
 }
 
@@ -550,6 +579,7 @@ AnimationSlot *DefaultAnimationSM::setAnimation(
 
 	PrimitiveTypes::UInt32 goodSlot = firstActiveAnimSlotIndex;
 	PrimitiveTypes::Float32 goodPercentage = customPercentage;
+	bool curIsPartial = animationIndex == 2;
 	for (PrimitiveTypes::UInt32 i = firstActiveAnimSlotIndex; i <= lastActiveAnimSlotIndex; i++)
 	{
 		AnimationSlot slot = m_animSlots[i];
@@ -572,40 +602,49 @@ AnimationSlot *DefaultAnimationSM::setAnimation(
 			}
 			// some animation is running, need to make it fade
 			slot.m_framesLeft = min(slot.m_numFrames, 30.0f);
-			slot.setNotLooping();
-			if (slot.isLooping())
+			if (!curIsPartial)
 			{
-				assert(0);
-			}
-			slot.setNotToNotifyOnAnimationEnd();
-			slot.setFadingAway();
-			slot.m_weight = 30.0f;
-
-			// now need to put in one of the fading slots
-			bool found = false;
-			for (PrimitiveTypes::UInt32 j = firstFadingAnimSlotIndex; j <= lastFadingAnimSlotIndex; j++)
-			{
-				AnimationSlot &repSlot = m_animSlots[j];
-
-				// skip if it is still active. can't skip if the last one. chose last one even if active since we need to put the animation in some slot
-				if (m_animSlots[j].isActive() && j != lastFadingAnimSlotIndex)
-					continue;
-				setSlot(j, slot);
-				if (repSlot.isLooping())
+				slot.setNotLooping();
+				if (slot.isLooping())
 				{
-					assert(!"Found an animation in a fading slot that is looping!");
+					assert(0);
 				}
-				found = true;
-				break;
+				slot.setNotToNotifyOnAnimationEnd();
+				slot.setFadingAway();
+			
+			
+				slot.m_weight = 30.0f;
+
+				// now need to put in one of the fading slots
+				bool found = false;
+				for (PrimitiveTypes::UInt32 j = firstFadingAnimSlotIndex; j <= lastFadingAnimSlotIndex; j++)
+				{
+					AnimationSlot &repSlot = m_animSlots[j];
+
+					// skip if it is still active. can't skip if the last one. chose last one even if active since we need to put the animation in some slot
+					if (m_animSlots[j].isActive() && j != lastFadingAnimSlotIndex)
+						continue;
+					setSlot(j, slot);
+					if (repSlot.isLooping())
+					{
+						assert(!"Found an animation in a fading slot that is looping!");
+					}
+					found = true;
+					break;
+				}
+				if (!found)
+				{
+					assert(!"Could not put a new fading slot");
+				}
+				slot.setNotActive(); // this is now a not active slot since we moved the animation to fading slot
+				goodSlot = i; // this slot will be used for the new animation
+				if (useProgressPercentageOfReplacedAnimation)
+					goodPercentage = slot.getProgressPercentage();
 			}
-			if (!found)
-			{
-				assert(!"Could not put a new fading slot");
-			}
-			slot.setNotActive(); // this is now a not active slot since we moved the animation to fading slot
+		}
+		else
+		{
 			goodSlot = i; // this slot will be used for the new animation
-			if (useProgressPercentageOfReplacedAnimation)
-				goodPercentage = slot.getProgressPercentage();
 		}
 	}
 
@@ -613,7 +652,17 @@ AnimationSlot *DefaultAnimationSM::setAnimation(
 	AnimSetBufferGPU *pAnimSetBufferGPU = pSkelInstance->m_hAnimationSetGPUs[animationSetIndex].getObject<AnimSetBufferGPU>();
 	AnimationSetCPU *pAnimSet = pAnimSetBufferGPU->m_hAnimationSetCPU.getObject<AnimationSetCPU>();
 	AnimationCPU &anim = pAnimSet->m_animations[(animationIndex + m_debugAnimIdOffset)];
-	AnimationSlot slot(animationSetIndex, (animationIndex + m_debugAnimIdOffset), 0, (PrimitiveTypes::Float32)(anim.m_frames.m_size-1), anim.m_startJoint, anim.m_endJoint, ACTIVE | additionalFlags /*| PARTIAL_BODY_ANIMATION | NOTIFY_ON_ANIMATION_END*/, weight);
+	PrimitiveTypes::UInt32 curFlag = ACTIVE | additionalFlags;
+
+	AnimationSlot slot;
+	if (curIsPartial)
+	{
+		curFlag |= PARTIAL_BODY_ANIMATION;
+		slot = AnimationSlot(animationSetIndex, (animationIndex + m_debugAnimIdOffset), 0, (PrimitiveTypes::Float32)(anim.m_frames.m_size-1), 4, 54, curFlag /*| PARTIAL_BODY_ANIMATION | NOTIFY_ON_ANIMATION_END*/, weight);
+	} else
+	{
+		slot = AnimationSlot(animationSetIndex, (animationIndex + m_debugAnimIdOffset), 0, (PrimitiveTypes::Float32)(anim.m_frames.m_size-1), anim.m_startJoint, anim.m_endJoint, curFlag /*| PARTIAL_BODY_ANIMATION | NOTIFY_ON_ANIMATION_END*/, weight);
+	}
 	setSlot(goodSlot, slot);
 	return &m_animSlots[goodSlot];
 }
@@ -671,6 +720,82 @@ PrimitiveTypes::Int32 DefaultAnimationSM::setAnimationWeight(
 	}
 	return set;
 }
+void DefaultAnimationSM::generateAdditiveSource(PrimitiveTypes::UInt32 sourceAnimationSetIndex, PrimitiveTypes::UInt32 sourceAnimationIndex,
+	PrimitiveTypes::UInt32 referenceAnimationSetIndex,PrimitiveTypes::UInt32 referenceAnimationIndex,
+	PrimitiveTypes::UInt32 targetAnimationSetIndex, PrimitiveTypes::UInt32 targetAnimationIndex)
+{
+	Handle hParentSkinInstance = getFirstParentByType<SkeletonInstance>();
+	PEASSERT(hParentSkinInstance.isValid(), "SM has to belong to skeleton instance");
+
+	SkeletonInstance *pSkelInstance = hParentSkinInstance.getObject<SkeletonInstance>();
+	AnimSetBufferGPU *pAnimSetBufferGPUSource = pSkelInstance->m_hAnimationSetGPUs[sourceAnimationSetIndex].getObject<AnimSetBufferGPU>();
+	AnimationSetCPU *pAnimSetSource = pAnimSetBufferGPUSource->m_hAnimationSetCPU.getObject<AnimationSetCPU>();
+	AnimationCPU &animSource = pAnimSetSource->m_animations[(sourceAnimationIndex + m_debugAnimIdOffset)];
+
+	AnimSetBufferGPU *pAnimSetBufferGPURef = pSkelInstance->m_hAnimationSetGPUs[referenceAnimationSetIndex].getObject<AnimSetBufferGPU>();
+	AnimationSetCPU *pAnimSetRef = pAnimSetBufferGPURef->m_hAnimationSetCPU.getObject<AnimationSetCPU>();
+	AnimationCPU &animRef = pAnimSetRef->m_animations[(referenceAnimationIndex + m_debugAnimIdOffset)];
+
+	AnimationCPU additiveAnim(*m_pContext, m_arena);
+
+	if (animSource.m_frames.m_size < animRef.m_frames.m_size)
+	{
+		assert(animSource.m_frames.m_size < animRef.m_frames.m_size);
+	}
+	additiveAnim.m_frames.reset(animSource.m_frames.m_size);
+	for (PrimitiveTypes::Int16 i = 0; i < animSource.m_frames.m_size; i++)
+	{
+		Array<TSQ> currentSourceFrame = animSource.m_frames[i];
+		Array<TSQ> currentReferenceFrame = animRef.m_frames[i];
+		Array<TSQ> additiveFrame;
+		additiveFrame.reset(animSource.m_frames[i].m_size);
+		for (PrimitiveTypes::Int16 j = 0; j < animSource.m_frames[i].m_size; j++)
+		{
+			TSQ sourcePos = currentSourceFrame[j];
+			TSQ refPos = currentReferenceFrame[j];
+
+			Matrix4x4 sourceTransform = sourcePos.createMatrix();
+			Matrix4x4 refTransform = refPos.createMatrix();
+			Matrix4x4 additiveTransform = sourceTransform * refTransform.inverse();
+			additiveFrame.add(TSQ(additiveTransform));
+		}
+		additiveAnim.m_frames.add(additiveFrame);
+	}
+	additiveAnim.m_numJoints = animSource.m_numJoints;
+	additiveAnim.m_startJoint = animSource.m_startJoint;
+	additiveAnim.m_endJoint = animSource.m_endJoint;
+
+	m_additiveAnim = &additiveAnim;
+
+	AnimSetBufferGPU *pAnimSetBufferGPUTarget = pSkelInstance->m_hAnimationSetGPUs[targetAnimationSetIndex].getObject<AnimSetBufferGPU>();
+	AnimationSetCPU *pAnimSetTarget = pAnimSetBufferGPUTarget->m_hAnimationSetCPU.getObject<AnimationSetCPU>();
+	AnimationCPU &animTarget = pAnimSetTarget->m_animations[(targetAnimationIndex + m_debugAnimIdOffset)];
+	
+	AnimationCPU targetAdditiveAnim(*m_pContext, m_arena);
+	targetAdditiveAnim.m_frames.reset(animTarget.m_frames.m_size);
+
+	for (PrimitiveTypes::Int16 i = 0; i < animTarget.m_frames.m_size; i++)
+	{
+		Array<TSQ> targetFrame = animTarget.m_frames[i];
+		float percentage = i / animTarget.m_frames.m_size;
+		Array<TSQ> additiveFrame = additiveAnim.m_frames[floor(percentage * additiveAnim.m_frames.m_size)];
+		Array<TSQ> finalFrame;
+		finalFrame.reset(animTarget.m_frames[i].m_size);
+		for (PrimitiveTypes::Int16 j = 0; j < animTarget.m_frames[i].m_size; j++)
+		{
+			TSQ targetPos = targetFrame[j];
+			TSQ additivePos = additiveFrame[j];
+
+			Matrix4x4 targetTransform = targetPos.createMatrix();
+			Matrix4x4 additiveTransform = additivePos.createMatrix();
+			Matrix4x4 finalTransform = additiveTransform * targetTransform;
+			finalFrame.add(TSQ(finalTransform));
+		}
+		targetAdditiveAnim.m_frames.add(finalFrame);
+	}
+	pAnimSetTarget->m_animations.reset(pAnimSetTarget->m_animations.m_size + 1, true);
+	pAnimSetTarget->m_animations.add(targetAdditiveAnim);
+}
 
 PrimitiveTypes::Int32 DefaultAnimationSM::setWeightsBetweenAnimations(
 	PrimitiveTypes::UInt32 animationSetIndex0,
@@ -691,6 +816,8 @@ PrimitiveTypes::Int32 DefaultAnimationSM::setWeightsBetweenAnimations(
 		alpha);
 	return set;
 }
+
+	// void addClipToCurrent
 
 
 

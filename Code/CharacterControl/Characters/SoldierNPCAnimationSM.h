@@ -40,6 +40,24 @@ struct SoldierNPCAnimSM_Event_STAND_AND_SHOOT : public PE::Events::Event {
 	SoldierNPCAnimSM_Event_STAND_AND_SHOOT() {}
 };
 
+struct SoldierNPCAnimSM_Event_SAMPLE_BLEND : public PE::Events::Event {
+	PE_DECLARE_CLASS(SoldierNPCAnimSM_Event_SAMPLE_BLEND);
+
+	SoldierNPCAnimSM_Event_SAMPLE_BLEND() {}
+};
+
+struct SoldierNPCAnimSM_Event_SAMPLE_PARTIAL : public PE::Events::Event {
+	PE_DECLARE_CLASS(SoldierNPCAnimSM_Event_SAMPLE_PARTIAL);
+
+	SoldierNPCAnimSM_Event_SAMPLE_PARTIAL() {}
+};
+
+struct SoldierNPCAnimSM_Event_SAMPLE_ADDITIVE : public PE::Events::Event {
+	PE_DECLARE_CLASS(SoldierNPCAnimSM_Event_SAMPLE_ADDITIVE);
+
+	SoldierNPCAnimSM_Event_SAMPLE_ADDITIVE() {}
+};
+
 // todo add events for shooting (sent by weapons state machine
 
 };
@@ -50,14 +68,24 @@ struct SoldierNPCAnimationSM : public PE::Components::DefaultAnimationSM
 {
 	PE_DECLARE_CLASS(SoldierNPCAnimationSM);
 	
+	// enum AnimId
+	// {
+	// 	NONE = -1,
+	// 	STAND = 20,
+	// 	WALK = 5,
+	// 	RUN = 18,
+	// 	STAND_AIM = 1,
+	// 	STAND_SHOOT = 16,
+	// };
+
+	// for vampire
 	enum AnimId
 	{
 		NONE = -1,
-		STAND = 20,
-		WALK = 5,
-		RUN = 18,
-		STAND_AIM = 1,
-		STAND_SHOOT = 16,
+		STAND = 1,
+		RUN = 0,
+		STAND_SHOOT = 2,
+		ADDITIVE_AIM = 3
 	};
 
 	SoldierNPCAnimationSM(PE::GameContext &context, PE::MemoryArena arena, PE::Handle hMyself);
@@ -72,9 +100,18 @@ struct SoldierNPCAnimationSM : public PE::Components::DefaultAnimationSM
 	virtual void do_SoldierNPCAnimSM_Event_RUN(PE::Events::Event *pEvt);
 	PE_DECLARE_IMPLEMENT_EVENT_HANDLER_WRAPPER(do_SoldierNPCAnimSM_Event_STAND_AND_SHOOT)
 	virtual void do_SoldierNPCAnimSM_Event_STAND_AND_SHOOT(PE::Events::Event *pEvt);
+	
+	PE_DECLARE_IMPLEMENT_EVENT_HANDLER_WRAPPER(do_SoldierNPCAnimSM_Event_SAMPLE_BLEND)
+	virtual void do_SoldierNPCAnimSM_Event_SAMPLE_BLEND(PE::Events::Event *pEvt);
 
+	PE_DECLARE_IMPLEMENT_EVENT_HANDLER_WRAPPER(do_SoldierNPCAnimSM_Event_SAMPLE_PARTIAL)
+	virtual void do_SoldierNPCAnimSM_Event_SAMPLE_PARTIAL(PE::Events::Event *pEvt);
+
+	PE_DECLARE_IMPLEMENT_EVENT_HANDLER_WRAPPER(do_SoldierNPCAnimSM_Event_SAMPLE_ADDITIVE)
+	virtual void do_SoldierNPCAnimSM_Event_SAMPLE_ADDITIVE(PE::Events::Event *pEvt);
 
 	AnimId m_curId;
+
 };
 
 };

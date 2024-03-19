@@ -201,7 +201,7 @@ struct Event_CREATE_MESH : public Event {
 	{
 		StringOps::writeToString("", m_meshFilename, 255);
 		StringOps::writeToString("Default", m_package, 255);
-		StringOps::writeToString("Box", m_collider, 255);
+		// StringOps::writeToString("Box", m_collider, 255);
 
 	}
 	virtual ~Event_CREATE_MESH(){}
@@ -217,8 +217,6 @@ struct Event_CREATE_MESH : public Event {
 
 	char m_meshFilename[255];
 	char m_package[255];
-	char m_collider[255];
-	Vector3 dimension;
 	Vector3 m_pos, m_u, m_v, m_n; 
 	bool hasCustomOrientation;
 	PEUUID m_peuuid;

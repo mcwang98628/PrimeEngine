@@ -21,12 +21,16 @@ struct SoldierNPCBehaviorSM : public PE::Components::Component
 		WAITING_FOR_WAYPOINT, // have a name of waypoint to go to, but it has not been loaded yet
 		PATROLLING_WAYPOINTS,
 		COMBAT,
+		SAMPLE_ANIMATION
 	};
 
 
 	SoldierNPCBehaviorSM(PE::GameContext &context, PE::MemoryArena arena, PE::Handle hMyself, PE::Handle hMovementSM);
 
 	void start();
+
+	void startAnimationSample();
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// Component API and Event handlers
@@ -50,6 +54,9 @@ struct SoldierNPCBehaviorSM : public PE::Components::Component
 	char m_npcType[32];
 	char m_curEnemy[32];
 	States m_state;
+
+	PrimitiveTypes::Float32 m_pastTime;
+	const PrimitiveTypes::Float32 m_exampleTimeThreshold = 5.0f;
 };
 
 };

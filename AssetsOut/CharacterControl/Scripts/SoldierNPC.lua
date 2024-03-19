@@ -33,6 +33,7 @@ function runScript(args)
         v[1], v[2], v[3],
         n[1], n[2], n[3],
         args['peuuid'],
+        args['animation'],
         patrolWayPoint, -- could be nil
         enemy
     )

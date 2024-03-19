@@ -240,15 +240,15 @@ void Event_CREATE_MESH::SetLuaFunctions(PE::Components::LuaEnvironment *pLuaEnv,
 int Event_CREATE_MESH::l_Construct(lua_State* luaVM)
 {
 	Handle h("EVENT", sizeof(Event_CREATE_MESH));
-	int numArgs = 19;
+	int numArgs = 16;
 
-	PE::GameContext *pContext = (PE::GameContext*)(lua_touserdata(luaVM, -numArgs));
+	PE::GameContext *pContext = (PE::GameContext*)(lua_touserdata(luaVM, -numArgs--));
 	
 	Event_CREATE_MESH *pEvt = new(h) Event_CREATE_MESH(pContext->m_gameThreadThreadOwnershipMask);
 
 	const char* name = lua_tostring(luaVM, -numArgs--);
 	const char* package = lua_tostring(luaVM, -numArgs--);
-	const char* collider = NULL;
+	// const char* collider = NULL;
 
 	float positionFactor = 1.0f / 100.0f;
 	Vector3 pos, u, v, n, dimension;
@@ -269,20 +269,20 @@ int Event_CREATE_MESH::l_Construct(lua_State* luaVM)
 	n.m_z = (float)lua_tonumber(luaVM, -numArgs--);
 
 	pEvt->m_peuuid = LuaGlue::readPEUUID(luaVM, -numArgs--);
-	if (!lua_isnil(luaVM, -numArgs))
-	{
-		collider = lua_tostring(luaVM, -numArgs--);
-		StringOps::writeToString(collider, pEvt->m_collider, 32);
-	} else
-	{
-		numArgs--;
-	}
-	if (!lua_isnil(luaVM, -numArgs))
-	{
-		dimension.m_x = (float)lua_tonumber(luaVM, -numArgs--);
-		dimension.m_y = (float)lua_tonumber(luaVM, -numArgs--);
-		dimension.m_z = (float)lua_tonumber(luaVM, -numArgs--);
-	}
+	// if (!lua_isnil(luaVM, -numArgs))
+	// {
+	// 	collider = lua_tostring(luaVM, -numArgs--);
+	// 	StringOps::writeToString(collider, pEvt->m_collider, 32);
+	// } else
+	// {
+	// 	numArgs--;
+	// }
+	// if (!lua_isnil(luaVM, -numArgs))
+	// {
+	// 	dimension.m_x = (float)lua_tonumber(luaVM, -numArgs--);
+	// 	dimension.m_y = (float)lua_tonumber(luaVM, -numArgs--);
+	// 	dimension.m_z = (float)lua_tonumber(luaVM, -numArgs--);
+	// }
 	// set data values
 	StringOps::writeToString(name, pEvt->m_meshFilename, 255);
 	StringOps::writeToString(package, pEvt->m_package, 255);
@@ -295,7 +295,7 @@ int Event_CREATE_MESH::l_Construct(lua_State* luaVM)
 	pEvt->m_u = u;
 	pEvt->m_v = v;
 	pEvt->m_n = n;
-	pEvt->dimension = dimension;
+	// pEvt->dimension = dimension;
 	pEvt->hasCustomOrientation = true;
 	LuaGlue::pushTableBuiltFromHandle(luaVM, h); 
 

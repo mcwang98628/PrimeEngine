@@ -23,6 +23,7 @@ struct Event_CreateSoldierNPC : public PE::Events::Event_CREATE_MESH
 	char m_gunMeshPackage[64];
 	char m_patrolWayPoint[32];
 	char m_enemy[32];
+	char m_animation[32];
 };
 
 struct Event_CreateEnemyNPC : public PE::Events::Event_CREATE_MESH

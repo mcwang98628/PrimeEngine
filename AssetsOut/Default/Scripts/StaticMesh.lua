@@ -8,11 +8,11 @@ function runScript(args)
     local v = args['base']['v']
     local n = args['base']['n']
     
-    local colliderType = nil
-    if args['colliderType'] ~= nil then
-        colliderType = args['colliderType']
-    end
-    
+--     local colliderType = nil
+--     if args['colliderType'] ~= nil then
+--         colliderType = args['colliderType']
+--     end
+--     
     evt = root.PE.Events.Event_CREATE_MESH.Construct(
     l_getGameContext(),
     args['meshName'], args['meshPackage'], 
@@ -20,9 +20,7 @@ function runScript(args)
     u[1], u[2], u[3],
     v[1], v[2], v[3],
     n[1], n[2], n[3],
-    args['peuuid'],
-    colliderType,
-    dimension[1], dimension[2], dimension[3]
+    args['peuuid']
     )
     root.PE.Components.Component.SendEventToHandle(handler, evt)
 end

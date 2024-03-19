@@ -79,6 +79,16 @@ void JointSceneNode::do_CALCULATE_TRANSFORMATIONS(Events::Event *pEvt)
 	{
 		jntTransform = pAnimSM->m_modelSpacePalette[m_myJoint];
 	}
+	Vector3 u, v, n;
+	u = jntTransform.getU();
+	v = jntTransform.getV();
+	n = jntTransform.getN();
+	u.normalize();
+	v.normalize();
+	n.normalize();
+	jntTransform.setU(u);
+	jntTransform.setV(v);
+	jntTransform.setN(n);
 
 	Matrix4x4 skinTransform = pSkelInst->getFirstParentByType<SceneNode>().getObject<SceneNode>()->m_worldTransform;
  	m_worldTransform = (skinTransform * jntTransform) * m_base;

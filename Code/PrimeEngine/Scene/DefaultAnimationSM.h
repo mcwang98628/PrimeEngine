@@ -126,6 +126,14 @@ struct DefaultAnimationSM : public Component
 		PrimitiveTypes::UInt32 firstActiveAnimSlotIndex,
 		PrimitiveTypes::UInt32 lastActiveAnimSlotIndex);
 
+	void generateAdditiveSource(
+	PrimitiveTypes::UInt32 sourceAnimationSetIndex,
+	PrimitiveTypes::UInt32 sourceAnimationIndex,
+	PrimitiveTypes::UInt32 referenceAnimationSetIndex,
+	PrimitiveTypes::UInt32 referenceAnimationIndex,
+	PrimitiveTypes::UInt32 targetAnimationSetIndex,
+	PrimitiveTypes::UInt32 targetAnimationIndex);
+	
 	void createAdditionalLocalTransforms();
 	
 	void setInstancedCSJobIndex(int index) {m_instanceCSJobIndex = index;}
@@ -141,10 +149,15 @@ struct DefaultAnimationSM : public Component
 	Array<Matrix4x4> m_curPalette; // transformation of each joint multiplied by inverse bind pose transform (to be passed to GPU)
 	Array<Matrix4x4> m_modelSpacePalette;
 
+	AnimationCPU* m_additiveAnim;
+
 	bool m_gpuAnimation;
 	int m_debugAnimIdOffset;
 
 	int m_instanceCSJobIndex;
+
+	PE::MemoryArena m_arena;
+	PE::GameContext *m_pContext;
 };
 
 }; // namespace Components
